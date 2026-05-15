@@ -4,9 +4,10 @@ import { BRANDS, NAV_SECTIONS, OLY, getBrandChars, queueFor } from "./data/demoC
 import "./styles.css";
 
 function App() {
-  const [brandId, setBrandId] = useState(OLY.CURRENT_BRAND);
+  const params = new URLSearchParams(window.location.search);
+  const [brandId, setBrandId] = useState(params.get("brand") && BRANDS[params.get("brand")] ? params.get("brand") : OLY.CURRENT_BRAND);
   const [brandMenuOpen, setBrandMenuOpen] = useState(false);
-  const [screen, setScreen] = useState("triage");
+  const [screen, setScreen] = useState(NAV_SECTIONS.some((item) => item.id === params.get("screen")) ? params.get("screen") : "triage");
   const [openId, setOpenId] = useState(null);
   const brand = BRANDS[brandId];
   const queue = queueFor(OLY, brandId);
@@ -172,28 +173,59 @@ function Triage({ brand, queue, chars, counts, onOpen }) {
   );
 }
 
-function Pipeline({ queue, onOpen }) {
+function Pipeline({ brand, queue, onOpen }) {
+  const [stage, setStage] = useState("review");
+  const stages = [
+    { id: "review", label: "Review", count: queue.filter((i) => ["script_review", "pending_review"].includes(i.status)).length, sub: "script + render QA", cls: "good" },
+    { id: "pending_keyframes", label: "Keyframes", count: queue.filter((i) => i.status === "pending_keyframes").length, sub: "queued", cls: "" },
+    { id: "rendering", label: "Rendering", count: queue.filter((i) => i.status === "rendering").length, sub: "HeyGen", cls: "warn" },
+    { id: "fixes", label: "Fixes needed", count: queue.filter((i) => i.status === "failed").length, sub: "renders + upload readiness", cls: "bad" },
+  ];
+  const queueItems = queue.filter((item) => {
+    if (stage === "all") return true;
+    if (stage === "review") return ["script_review", "pending_review"].includes(item.status);
+    if (stage === "fixes") return item.status === "failed";
+    return item.status === stage;
+  });
+  const label = stages.find((s) => s.id === stage)?.label || "All stages";
+
   return (
     <section>
       <div className="page-head">
         <div>
           <div className="kicker">Pipeline</div>
-          <h1>Script → render → review → upload</h1>
-          <p className="subtitle">Rows mirror the artifact lifecycle from the real Revenants stack.</p>
+          <h1>Live status</h1>
+          <p className="subtitle">{brand.name} · {queue.length} artifacts in flight · viewing <b>{label}</b></p>
         </div>
+        <button className="btn" type="button">Pause renders</button>
       </div>
-      <div className="stage-board">
-        {["script_review", "rendering", "pending_review", "posted", "failed"].map((stage) => (
-          <div className="stage card" key={stage}>
-            <div className="stage-head">{stage.replace("_", " ")}</div>
-            {queue.filter((a) => a.status === stage).map((a) => (
-              <button className="stage-card" type="button" key={a.id} onClick={() => onOpen(a.id)}>
-                <strong>{a.template_label}</strong>
-                <span>{a.persona_label} · ${a.cost_est.toFixed(2)}</span>
-              </button>
-            ))}
-          </div>
+      <div className="flow">
+        {stages.map((s, idx) => (
+          <React.Fragment key={s.id}>
+            {idx > 0 && idx < 3 && <div className="flow-arrow">→</div>}
+            {idx === 3 && <div className="flow-divider">fix</div>}
+            <button className={`flow-stage ${s.cls} ${stage === s.id ? "on" : ""}`} type="button" onClick={() => setStage(stage === s.id ? "all" : s.id)}>
+              <div className="lbl">{s.label}</div>
+              <div className="val">{s.count}</div>
+              <div className="sub">{s.sub}</div>
+            </button>
+          </React.Fragment>
         ))}
+      </div>
+      <div className="pipeline-review-grid">
+        <div className="queue">
+          <div className="qrow pipeline-row header">
+            <div />
+            <div>Loop</div>
+            <div>Hook + script preview</div>
+            <div>Persona</div>
+            <div>Status</div>
+            <div>Cost</div>
+          </div>
+          {queueItems.length === 0 && <div className="empty queue-empty">No items in {label.toLowerCase()}.</div>}
+          {queueItems.map((item) => <QueueRow key={item.id} item={item} onOpen={onOpen} />)}
+        </div>
+        <ActivityRail />
       </div>
     </section>
   );
@@ -201,26 +233,58 @@ function Pipeline({ queue, onOpen }) {
 
 function Sources({ brandId }) {
   const sources = OLY.SOURCE_POOL.filter((s) => s.brand === brandId);
-  return <SimpleTable title="Viral tailing" subtitle="Source clips become briefs, then artifacts." rows={sources.map((s) => [s.title, fmt(s.views), s.used_by.length ? s.used_by.join(", ") : "unused"])} />;
+  const adapted = sources.filter((s) => s.used_by?.length).length;
+  return (
+    <section>
+      <div className="page-head">
+        <div>
+          <div className="kicker">Viral tailing</div>
+          <h1>Source pool</h1>
+          <p className="subtitle">Source clips become briefs, then artifacts.</p>
+        </div>
+        <div className="header-actions"><button className="btn" type="button">Paste URLs...</button><button className="btn primary" type="button">Run pull cron now</button></div>
+      </div>
+      <div className="kpi-strip three">
+        <Kpi label="Clips in pool" value={sources.length} delta={`${adapted} sources adapted`} />
+        <Kpi label="Fanout artifacts" value={sources.reduce((n, s) => n + (s.used_by?.length || 0), 0)} delta="demo queue" />
+        <Kpi label="Tastemakers" value={sources.length ? "2" : "0"} delta="public demo" />
+      </div>
+      <div className="source-grid">
+        {sources.length === 0 ? <div className="empty card">Only River Moto has source clips seeded.</div> : sources.map((s) => <SourceCard key={s.id} source={s} />)}
+      </div>
+    </section>
+  );
 }
 
 function Reddit({ brandId }) {
   const opps = OLY.REDDIT_OPPS.filter((s) => s.brand === brandId);
-  return <SimpleTable title="Reddit" subtitle="Demo discussion mining queue, with private accounts removed." rows={opps.map((s) => [s.subreddit, s.topic, s.status.replace("_", " "), s.angle])} />;
+  return (
+    <section>
+      <div className="page-head"><div><div className="kicker">Reddit</div><h1>Discussion mining</h1><p className="subtitle">Public demo opportunities with account automation removed.</p></div></div>
+      <div className="queue">
+        <div className="qrow reddit-row header"><div>Subreddit</div><div>Topic</div><div>Status</div><div>Angle</div></div>
+        {opps.length === 0 ? <div className="empty queue-empty">Only River Moto has Reddit opportunities seeded.</div> : opps.map((o) => (
+          <div className="qrow reddit-row" key={o.id}>
+            <div className="mono">{o.subreddit}</div><div className="q-hook">{o.topic}</div><div><span className="pill accent"><span className="dot" />{o.status.replace("_", " ")}</span></div><div className="q-meta">{o.angle}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function Characters({ chars }) {
   return (
     <section>
-      <div className="page-head"><div><div className="kicker">Characters</div><h1>Persona configs</h1></div></div>
-      <div className="chars-grid">{chars.map((c) => <CharacterCard key={c.id} c={c} />)}</div>
+      <div className="page-head"><div><div className="kicker">Characters</div><h1>{chars.filter((c) => c.ready).length} ready · {chars.filter((c) => !c.ready).length} need attention</h1><p className="subtitle">Voice profile, account roster, posting cadence per character.</p></div></div>
+      {chars.length === 0 ? <div className="empty card">Only River Moto has personas configured for the demo recording.</div> : <div className="char-grid">{chars.map((c) => <CharacterCard key={c.id} c={c} />)}</div>}
     </section>
   );
 }
 
 function YouTube({ brandId }) {
   const pack = OLY.YOUTUBE_CHANNELS[brandId] || { channels: [] };
-  return <SimpleTable title="YouTube" subtitle="Demo upload slot only; OAuth stays private." rows={(pack.channels || []).map((c) => [c.label, c.handle, c.latest_title || "no upload"])} />;
+  return <ControlTable title="YouTube" subtitle="Demo upload slot only; OAuth stays private." columns={["Channel", "Handle", "Latest upload"]} rows={(pack.channels || []).map((c) => [c.label, c.handle, c.latest_title || "no upload"])} />;
 }
 
 function Workflow() {
@@ -236,7 +300,7 @@ function Workflow() {
 
 function Experiments({ brandId }) {
   const health = OLY.TEMPLATE_HEALTH[brandId] || { templates: [] };
-  return <SimpleTable title="Experiments" subtitle="Template health and post-render learning." rows={(health.templates || []).map((t) => [t.id, t.recommendation, t.views_30d ? fmt(t.views_30d) : "-"])} />;
+  return <ControlTable title="Experiments" subtitle="Template health and post-render learning." columns={["Template", "Recommendation", "30d views"]} rows={(health.templates || []).map((t) => [t.id, t.recommendation, t.views_30d ? fmt(t.views_30d) : "-"])} />;
 }
 
 function SimpleTable({ title, subtitle, rows }) {
@@ -249,6 +313,69 @@ function SimpleTable({ title, subtitle, rows }) {
         ))}
       </div>
     </section>
+  );
+}
+
+function ControlTable({ title, subtitle, columns, rows }) {
+  return (
+    <section>
+      <div className="page-head"><div><div className="kicker">{title}</div><h1>{title}</h1><p className="subtitle">{subtitle}</p></div></div>
+      <div className="queue">
+        <div className="qrow table-control-row header">{columns.map((c) => <div key={c}>{c}</div>)}</div>
+        {rows.length === 0 ? <div className="empty queue-empty">No demo rows configured for this workspace.</div> : rows.map((row, i) => (
+          <div className="qrow table-control-row" key={i}>{row.map((cell, j) => <div key={j} className={j === 0 ? "q-hook" : "q-meta"}>{cell}</div>)}</div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function QueueRow({ item, onOpen }) {
+  const status = statusInfo(item.status);
+  return (
+    <button className="qrow pipeline-row queue-button" type="button" onClick={() => onOpen(item.id)}>
+      <div className="q-thumb"><img src={item.assets.thumb} alt="" /></div>
+      <div>
+        <div className="mono loop-label">{item.loop === "viral_tail" ? "viral tail" : item.loop}</div>
+        <div className="mono muted">demo</div>
+      </div>
+      <div>
+        <div className="q-hook">{item.hook}</div>
+        <div className="q-meta">{item.script.length} lines · {item.template_label} · {item.renderer}</div>
+      </div>
+      <div className="q-persona"><div>{item.persona_label}</div><div className="muted">{item.brand}</div></div>
+      <div><span className={`pill ${status.cls}`}><span className="dot" />{status.label}</span></div>
+      <div className="mono q-cost">${item.cost_est.toFixed(2)}</div>
+    </button>
+  );
+}
+
+function SourceCard({ source }) {
+  return (
+    <article className="source-card card">
+      <div className="source-preview"><span>{fmt(source.views)}</span></div>
+      <div className="source-body">
+        <div className="q-hook">{source.title}</div>
+        <div className="q-meta">{source.used_by.length ? `Adapted by ${source.used_by.join(", ")}` : "unused source"}</div>
+        <div className="source-footer"><span className="pill accent"><span className="dot" />source</span><span className="mono muted">{source.id}</span></div>
+      </div>
+    </article>
+  );
+}
+
+function ActivityRail() {
+  return (
+    <aside className="pipeline-activity-rail">
+      <div className="rail-section-head"><h2>Activity</h2><span className="mono muted">last {OLY.ACTIVITY.length}</span></div>
+      <div className="activity">
+        {OLY.ACTIVITY.map((a) => (
+          <div className="activity-row" key={`${a.ts}-${a.artifact_id}`}>
+            <div className="ts">{a.ts}</div>
+            <div className="det"><b>{a.artifact_id}</b> {a.label}</div>
+          </div>
+        ))}
+      </div>
+    </aside>
   );
 }
 
@@ -301,13 +428,21 @@ function CharacterChip({ c }) {
 
 function CharacterCard({ c }) {
   return (
-    <article className="character-card card">
-      <img src={c.avatar} alt="" />
-      <div className="card-pad">
-        <h2>{c.name}</h2>
-        <p className="subtitle">{c.handle} · {c.niche}</p>
-        <div className="char-meta"><span>{c.voice}</span><span>{c.backpressure} backpressure</span></div>
+    <article className={`char-card ${c.ready ? "" : "not-ready"}`}>
+      <div className="char-head">
+        <img className="char-avatar" src={c.avatar} alt="" />
+        <div className="char-identity">
+          <div className="char-name">{c.name}</div>
+          <div className="char-handle">{c.handle} · {c.niche}</div>
+        </div>
+        <span className={`pill ${c.ready ? "good" : "warn"}`}><span className="dot" />{c.ready ? "ready" : "blocked"}</span>
       </div>
+      <div className="char-stats">
+        <div className="char-stat"><div className="v">{c.ready ? 4 : 0}</div><div className="l">posted</div></div>
+        <div className="char-stat"><div className="v" style={{ color: "var(--warn)" }}>{c.ready ? 1 : 0}</div><div className="l">pending</div></div>
+        <div className="char-stat"><div className="v" style={{ color: "var(--bad)" }}>{c.ready ? 0 : 1}</div><div className="l">failed</div></div>
+      </div>
+      <div className="char-card-footer"><span className="mono">{c.voice}</span><span>{c.backpressure} backpressure</span></div>
     </article>
   );
 }
@@ -318,6 +453,18 @@ function Kpi({ label, value, delta }) {
 
 function fmt(n) {
   return Intl.NumberFormat("en", { notation: "compact" }).format(n);
+}
+
+function statusInfo(status) {
+  const labels = {
+    script_review: { cls: "accent", label: "script · pre-render" },
+    pending_keyframes: { cls: "warn", label: "keyframes" },
+    rendering: { cls: "warn", label: "rendering" },
+    pending_review: { cls: "accent", label: "review · post-render" },
+    posted: { cls: "good", label: "posted" },
+    failed: { cls: "bad", label: "failed" },
+  };
+  return labels[status] || { cls: "", label: status.replace("_", " ") };
 }
 
 createRoot(document.getElementById("root")).render(<App />);
