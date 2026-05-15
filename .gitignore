@@ -13,3 +13,4 @@ outputs/
 *.mov
 *.webm
 *.log
+.vercel
