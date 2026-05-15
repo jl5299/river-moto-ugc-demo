@@ -1,8 +1,7 @@
 # Revenants HeyGen Demo Slice
 
-This is the public-safe Revenants side of the HeyGen hackathon copy. It is
-based on `jl5299/revenants` branch `origin/refactor-by-dataflow` at commit
-`96aa79e` and keeps the pieces that matter for generated vertical video:
+This is the public-safe Revenants side of the HeyGen hackathon copy. It keeps
+the pieces that matter for generated vertical video:
 
 - `revenants.render.multi_shot.render_scene_shots_heygen`
 - `revenants.generation.prompt_rules.build_reference_video_prompt`

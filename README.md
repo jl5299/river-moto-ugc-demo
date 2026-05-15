@@ -1,6 +1,7 @@
 # River Moto UGC Studio
 
-Public HeyGen hackathon demo showing a seeded motorcycle UGC pipeline.
+Public HeyGen hackathon demo showing the Olympus/Revenants control-room UI
+seeded with fake motorcycle UGC configs.
 
 This repo includes:
 
