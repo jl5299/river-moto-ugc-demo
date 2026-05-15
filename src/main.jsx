@@ -341,7 +341,7 @@ function QueueRow({ item, onOpen }) {
       </div>
       <div>
         <div className="q-hook">{item.hook}</div>
-        <div className="q-meta">{item.script.length} lines · {item.template_label} · {item.renderer}</div>
+        <div className="q-meta">{item.script.length} lines · {item.template_label} · {item.review_hold || item.renderer}</div>
       </div>
       <div className="q-persona"><div>{item.persona_label}</div><div className="muted">{item.brand}</div></div>
       <div><span className={`pill ${status.cls}`}><span className="dot" />{status.label}</span></div>
@@ -404,6 +404,12 @@ function Drawer({ artifact, onClose }) {
         <div className="kicker">Script</div>
         {artifact.script.map((line) => <p key={line.t}><span className="mono">{line.t}s</span> {line.line}</p>)}
       </div>
+      {artifact.prompt?.length ? (
+        <div className="drawer-section">
+          <div className="kicker">Prompt</div>
+          {artifact.prompt.map((line) => <p key={line}>{line}</p>)}
+        </div>
+      ) : null}
       <div className="drawer-section">
         <div className="kicker">Render</div>
         <pre>{`render_scene_shots_heygen(
@@ -411,6 +417,7 @@ function Drawer({ artifact, onClose }) {
   keyframes=[${artifact.persona}_headshot],
   output_dir="outputs/${artifact.persona}",
 )`}</pre>
+        {artifact.review_hold ? <p className="mono muted">{artifact.review_hold}</p> : null}
       </div>
     </aside>
   );

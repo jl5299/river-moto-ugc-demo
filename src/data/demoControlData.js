@@ -220,6 +220,36 @@ export const OLY = {
       assets: { thumb: "/personas/demo1.png" },
     },
     {
+      id: "rv-301",
+      brand: "river",
+      persona: "demo3",
+      persona_label: "Demo 3",
+      template: "viral_tail_commuter_gap",
+      template_label: "Viral tail: commuter gap",
+      status: "pending_review",
+      loop: "viral_tail",
+      hook: "The clip went viral because every commuter knows this tiny panic moment.",
+      script: [
+        { t: 0, line: "The source clip is not about speed. It is about the awkward gap before traffic moves." },
+        { t: 4, line: "River's version turns that moment into a calm demo of throttle control." },
+        { t: 9, line: "The product proof is one smooth roll-on, no lecture needed." },
+      ],
+      prompt: [
+        "POV urban motorcycle commuter at a red light, hands steady on bars, subtle throttle roll-on.",
+        "Natural phone-video framing, daylight, no crash, no stunt, no aggressive lane split.",
+        "Keep the River Moto branding visible as a small tank badge, not an ad card.",
+      ],
+      review_hold: "2h post-render hold",
+      cost_est: 0.42,
+      renderer: "kling_viral_tail + heygen_video_agent",
+      source: {
+        source_id: "src-2",
+        primary_keyword: "commuter motorcycle",
+        value_prop_id: "smooth_low_speed_control",
+      },
+      assets: { thumb: "/personas/demo3.png" },
+    },
+    {
       id: "rv-104",
       brand: "river",
       persona: "demo1",
@@ -270,7 +300,7 @@ export const OLY = {
       title: "Beginner rider mistakes that make simple gear go viral",
       source_url: "https://example.com/demo-source-2",
       views: 311000,
-      used_by: [],
+      used_by: ["rv-301"],
     },
   ],
   REDDIT_OPPS: [
@@ -332,6 +362,7 @@ export const OLY = {
   ACTIVITY: [
     { ts: "08:21", brand: "river", artifact_id: "rv-101", label: "script moved to review" },
     { ts: "08:24", brand: "river", artifact_id: "rv-102", label: "render claimed by demo worker" },
+    { ts: "08:26", brand: "river", artifact_id: "rv-301", label: "viral-tail render parked for 2h review" },
     { ts: "08:28", brand: "river", artifact_id: "rv-104", label: "uploaded to River YouTube slot" },
   ],
 };
