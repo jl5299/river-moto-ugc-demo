@@ -288,11 +288,122 @@ function YouTube({ brandId }) {
 }
 
 function Workflow() {
+  const palette = [
+    {
+      cat: "Original",
+      color: "#5b7cfa",
+      desc: "Template-led reel generation",
+      nodes: [
+        { title: "Brief", desc: "value_prop → hook", io: "brief → script" },
+        { title: "Keyframes", desc: "Flux/identity stills", io: "script → frames" },
+        { title: "Render reel", desc: "motion + captions", io: "frames → mp4" },
+      ],
+    },
+    {
+      cat: "Viral tail",
+      color: "#b46a1f",
+      desc: "Source clip adaptation",
+      nodes: [
+        { title: "Source clip", desc: "viral sidecar", io: "clip → analysis" },
+        { title: "Adapt prompt", desc: "UGC-safe rewrite", io: "analysis → prompt" },
+        { title: "Review hold", desc: "2h script/prompt QA", io: "mp4 → review" },
+      ],
+    },
+  ];
+  const canvasNodes = [
+    { id: "brief", title: "River Moto brief", type: "brief", x: "8%", y: 94, out: "script" },
+    { id: "source", title: "Viral source", type: "clip", x: "8%", y: 266, out: "analysis" },
+    { id: "prompt", title: "Prompt writer", type: "script", x: "32%", y: 178, in: "script", out: "frames" },
+    { id: "render", title: "HeyGen render", type: "render", x: "54%", y: 178, in: "frames", out: "mp4" },
+    { id: "review", title: "2h review hold", type: "review", x: "74%", y: 178, in: "mp4", out: "queue" },
+  ];
   return (
     <section>
-      <div className="page-head"><div><div className="kicker">Workflow</div><h1>Demo render graph</h1><p className="subtitle">The public repo keeps the graph shape and stubs live worker execution.</p></div></div>
-      <div className="workflow-canvas card">
-        {["brief", "prompt", "keyframe", "heygen", "review", "youtube"].map((n, i) => <div className="node" key={n}>{i + 1}. {n}</div>)}
+      <div className="page-head">
+        <div>
+          <div className="kicker">Workflow editor</div>
+          <h1>River Moto render workflow</h1>
+          <p className="subtitle">LiteGraph-style rev pipeline view with live execution removed for the public demo.</p>
+        </div>
+        <div className="header-actions">
+          <button className="btn sm" type="button">Load</button>
+          <button className="btn sm" type="button">Save</button>
+          <button className="btn primary sm" type="button">Run</button>
+        </div>
+      </div>
+      <div className="wf-shell">
+        <aside className="wf-palette">
+          <input className="wf-search" value="" placeholder="Filter nodes..." readOnly />
+          <label className="wf-rail-section">
+            <span>Loop</span>
+            <select className="wf-loop-select" value="all" onChange={() => {}}>
+              <option value="all">All loops</option>
+              <option value="1">Loop 1 - Original content</option>
+              <option value="2">Loop 2 - Viral tail</option>
+            </select>
+          </label>
+          <div className="wf-legend">
+            <div className="wf-legend-head"><span>Signal types</span><span className="wf-legend-toggle">+</span></div>
+          </div>
+          {palette.map((group) => (
+            <div className="wf-cat-block" key={group.cat}>
+              <div className="wf-cat-band" style={{ background: group.color }}>
+                <span className="wf-cat-band-name">{group.cat}</span>
+                <span className="wf-cat-band-meta"><span className="wf-cat-band-count">{group.nodes.length}</span><span>▾</span></span>
+              </div>
+              <div className="wf-cat-body">
+                <div className="wf-cat-desc">{group.desc}</div>
+                {group.nodes.map((node) => (
+                  <div className="wf-pal-item" key={node.title}>
+                    <span className="wf-pal-bar" style={{ background: group.color }} />
+                    <div>
+                      <div className="wf-pal-title">{node.title}</div>
+                      <div className="wf-pal-desc">{node.desc}</div>
+                      <div className="wf-pal-types"><span className="wf-pal-type">{node.io}</span></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </aside>
+        <div className="wf-canvas">
+          <svg className="wf-lines" viewBox="0 0 980 520" aria-hidden="true">
+            <path d="M 206 132 C 260 132 242 216 296 216" />
+            <path d="M 206 304 C 260 304 242 216 296 216" />
+            <path d="M 446 216 C 486 216 496 216 536 216" />
+            <path d="M 686 216 C 726 216 736 216 776 216" />
+          </svg>
+          {canvasNodes.map((node) => (
+            <div className={`wf-node ${node.type}`} style={{ left: node.x, top: node.y }} key={node.id}>
+              {node.in ? <span className="wf-socket in" title={node.in} /> : null}
+              <div className="wf-node-type">{node.type}</div>
+              <div className="wf-node-title">{node.title}</div>
+              {node.out ? <span className="wf-socket out" title={node.out} /> : null}
+            </div>
+          ))}
+          <div className="wf-toolbar">
+            <button className="wf-tool-btn" type="button">Fit</button>
+            <button className="wf-tool-btn" type="button">100%</button>
+            <span className="wf-tool-stat">5 nodes · 4 links</span>
+          </div>
+        </div>
+        <aside className="wf-runs">
+          <div className="wf-rail-tabs">
+            <button className="wf-rail-tab on" type="button">Runs <span className="mono">2</span></button>
+            <button className="wf-rail-tab" type="button">Inspect</button>
+          </div>
+          <div className="wf-run open">
+            <div className="wf-run-status"><span className="wf-run-dot running" /><span>running</span></div>
+            <div className="wf-run-name">rv-301 viral tail</div>
+            <div className="wf-run-state">pending_review · 2h hold</div>
+          </div>
+          <div className="wf-run">
+            <div className="wf-run-status"><span className="wf-run-dot completed" /><span>completed</span></div>
+            <div className="wf-run-name">rv-104 kickstand check</div>
+            <div className="wf-run-state">posted · youtube_shorts</div>
+          </div>
+        </aside>
       </div>
     </section>
   );
