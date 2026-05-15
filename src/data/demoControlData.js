@@ -29,6 +29,56 @@ export const BRANDS = {
     railTint: "oklch(0.985 0.012 145)",
     glyph: "T",
   },
+  shift: {
+    id: "shift",
+    name: "ShiftWorks",
+    tagline: "Rider apparel launches",
+    sub: "demo client",
+    accent: "oklch(0.62 0.16 20)",
+    accentSoft: "oklch(0.96 0.045 25)",
+    railTint: "oklch(0.985 0.012 25)",
+    glyph: "S",
+  },
+  volta: {
+    id: "volta",
+    name: "Volta EV",
+    tagline: "Electric moto explainers",
+    sub: "demo client",
+    accent: "oklch(0.64 0.15 190)",
+    accentSoft: "oklch(0.95 0.045 190)",
+    railTint: "oklch(0.985 0.012 190)",
+    glyph: "V",
+  },
+  canyon: {
+    id: "canyon",
+    name: "Canyon Shield",
+    tagline: "Helmet safety stories",
+    sub: "demo client",
+    accent: "oklch(0.58 0.14 310)",
+    accentSoft: "oklch(0.96 0.04 310)",
+    railTint: "oklch(0.985 0.012 310)",
+    glyph: "C",
+  },
+  torque: {
+    id: "torque",
+    name: "TorqueLab",
+    tagline: "Garage tool demos",
+    sub: "demo client",
+    accent: "oklch(0.55 0.12 260)",
+    accentSoft: "oklch(0.95 0.04 260)",
+    railTint: "oklch(0.985 0.012 260)",
+    glyph: "T",
+  },
+  atlas: {
+    id: "atlas",
+    name: "Atlas Touring",
+    tagline: "Long-ride accessory UGC",
+    sub: "demo client",
+    accent: "oklch(0.6 0.13 115)",
+    accentSoft: "oklch(0.95 0.04 115)",
+    railTint: "oklch(0.985 0.012 115)",
+    glyph: "A",
+  },
 };
 
 export const NAV_SECTIONS = [
@@ -44,7 +94,7 @@ export const NAV_SECTIONS = [
 
 export const OLY = {
   CURRENT_BRAND: "river",
-  ALLOWED_BRANDS: ["river", "apex", "trail"],
+  ALLOWED_BRANDS: ["river", "apex", "trail", "shift", "volta", "canyon", "torque", "atlas"],
   BRAND_CHARS: {
     river: [
       {
@@ -105,6 +155,11 @@ export const OLY = {
     ],
     apex: [],
     trail: [],
+    shift: [],
+    volta: [],
+    canyon: [],
+    torque: [],
+    atlas: [],
   },
   QUEUE: [
     {

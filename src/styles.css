@@ -109,6 +109,8 @@ button { font: inherit; }
   border-radius: 10px;
   box-shadow: 0 16px 36px rgba(20,18,14,0.12);
   padding: 8px;
+  max-height: min(520px, calc(100vh - 78px));
+  overflow: auto;
 }
 .brand-switcher-menu-head {
   font-size: 10px;
@@ -367,6 +369,7 @@ h2 { font-size: 16px; font-weight: 650; margin: 0; }
 .table-row:last-child { border-bottom: 0; }
 .table-row span:not(:first-child) { color: var(--text-dim); font-family: ui-monospace, monospace; font-size: 12px; }
 .empty { padding: 24px; color: var(--text-dim); }
+.empty.compact { padding: 10px 0 2px; }
 .chars-grid { display: grid; grid-template-columns: repeat(5, minmax(160px, 1fr)); gap: 12px; }
 .character-card { overflow: hidden; }
 .character-card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }

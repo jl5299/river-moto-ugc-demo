@@ -67,7 +67,7 @@ function App() {
                         <span className="brand-switcher-name">{b.name}</span>
                         <span className="brand-switcher-sub">{b.tagline}</span>
                       </span>
-                      <span className="badge">{b.id === "river" ? "4 need you" : "empty"}</span>
+                      <span className="badge">{b.id === "river" ? "seeded" : "demo client"}</span>
                     </button>
                   ))}
                 </div>
@@ -129,6 +129,7 @@ function App() {
 
 function Triage({ brand, queue, chars, counts, onOpen }) {
   const needsReview = queue.filter((i) => ["script_review", "pending_review", "failed"].includes(i.status));
+  const seeded = brand.id === "river";
   return (
     <section>
       <div className="page-head">
@@ -144,8 +145,8 @@ function Triage({ brand, queue, chars, counts, onOpen }) {
         <Kpi label="Review" value={counts.review} delta="script/render" />
         <Kpi label="Viral gaps" value={counts.viral} delta="unused sources" />
         <Kpi label="Personas" value={counts.chars} delta={`${counts.notReady} blocked`} />
-        <Kpi label="24h cost" value="$1.32" delta="HeyGen est." />
-        <Kpi label="Uploads" value="1" delta="River slot" />
+        <Kpi label="24h cost" value={seeded ? "$1.32" : "$0.00"} delta={seeded ? "HeyGen est." : "not seeded"} />
+        <Kpi label="Uploads" value={seeded ? "1" : "0"} delta={seeded ? "River slot" : "not seeded"} />
       </div>
       <div className="triage-grid">
         <div className="card card-pad">
@@ -154,7 +155,7 @@ function Triage({ brand, queue, chars, counts, onOpen }) {
             <span className="pill warn"><span className="dot" /> demo1 no backpressure</span>
           </div>
           <div className="queue-list">
-            {needsReview.map((a) => <ArtifactRow key={a.id} artifact={a} onOpen={onOpen} />)}
+            {needsReview.length === 0 ? <div className="empty compact">Only River Moto is seeded for the demo recording.</div> : needsReview.map((a) => <ArtifactRow key={a.id} artifact={a} onOpen={onOpen} />)}
           </div>
         </div>
         <div className="card card-pad">
@@ -163,7 +164,7 @@ function Triage({ brand, queue, chars, counts, onOpen }) {
             <span className="pill">configs only</span>
           </div>
           <div className="character-stack">
-            {chars.map((c) => <CharacterChip key={c.id} c={c} />)}
+            {chars.length === 0 ? <div className="empty compact">No personas configured in this public demo client.</div> : chars.map((c) => <CharacterChip key={c.id} c={c} />)}
           </div>
         </div>
       </div>
@@ -218,7 +219,7 @@ function Characters({ chars }) {
 }
 
 function YouTube({ brandId }) {
-  const pack = OLY.YOUTUBE_CHANNELS[brandId];
+  const pack = OLY.YOUTUBE_CHANNELS[brandId] || { channels: [] };
   return <SimpleTable title="YouTube" subtitle="Demo upload slot only; OAuth stays private." rows={(pack.channels || []).map((c) => [c.label, c.handle, c.latest_title || "no upload"])} />;
 }
 
@@ -234,7 +235,7 @@ function Workflow() {
 }
 
 function Experiments({ brandId }) {
-  const health = OLY.TEMPLATE_HEALTH[brandId];
+  const health = OLY.TEMPLATE_HEALTH[brandId] || { templates: [] };
   return <SimpleTable title="Experiments" subtitle="Template health and post-render learning." rows={(health.templates || []).map((t) => [t.id, t.recommendation, t.views_30d ? fmt(t.views_30d) : "-"])} />;
 }
 
