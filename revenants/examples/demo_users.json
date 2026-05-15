@@ -1,0 +1,32 @@
+[
+  {
+    "id": "demo1",
+    "handle": "@demo1garage",
+    "niche": "motorcycle gear",
+    "offer": "showing practical rider proof points"
+  },
+  {
+    "id": "demo2",
+    "handle": "@demo2torque",
+    "niche": "track-day setup",
+    "offer": "turning spec claims into rider tests"
+  },
+  {
+    "id": "demo3",
+    "handle": "@demo3commute",
+    "niche": "city commuting",
+    "offer": "making daily ride problems visual"
+  },
+  {
+    "id": "demo4",
+    "handle": "@demo4wrench",
+    "niche": "garage installs",
+    "offer": "showing the part before the pitch"
+  },
+  {
+    "id": "demo5",
+    "handle": "@demo5touring",
+    "niche": "touring comfort",
+    "offer": "turning long miles into product stories"
+  }
+]

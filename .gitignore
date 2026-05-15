@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+.vercel/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+outputs/
+*.mp4
+*.mov
+*.webm
+*.log
