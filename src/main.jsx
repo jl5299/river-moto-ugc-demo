@@ -35,8 +35,8 @@ function App() {
         <div className="topbar-inner">
           <div className="topbar-lhs">
             <button className="olympus-home" type="button" onClick={() => setScreen("triage")}>
-              <span className="olympus-home-mark">O</span>
-              Olympus
+              <span className="olympus-home-mark">R</span>
+              Revenants
             </button>
             <div className="brand-switcher">
               <button className="brand-switcher-btn" type="button" onClick={() => setBrandMenuOpen((v) => !v)}>
